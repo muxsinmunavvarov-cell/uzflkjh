@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UzFlex TV</title>
+<link href="https://fonts.googlpis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E50914;
+    --dark: #0a0a0a;
+    --card-bg: #141414;
+    --text: #fff;
+    --subtext: #ccc;
+    --input-bg: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.15);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito', sans-serif; background: var(--dark); color: var(--text); overflow-x: hidden; }
+ 
+  /* ===== LANDING PAGE ===== */
+  #landing { display: block; }
+  #movies-page { display: none; }
+ 
+  /* Background */
+  .hero-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0; overflow: hidden;
+  }
+  .bg-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    height: 100%; gap: 3px;
+  }
+  .bg-poster {
+    background-size: cover; background-position: center;
+    opacity: 0.35; transition: opacity 0.5s;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  .bg-poster:nth-child(odd) { animation-delay: 1s; }
+  .bg-poster:nth-child(3n) { animation-delay: 2s; }
+  @keyframes pulse {
+    0%,100% { opacity: 0.3; }
+    50% { opacity: 0.5; }
+  }
+  .bg-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.7) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.85) 100%);
+  }
+ 
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 5%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent);
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem; letter-spacing: 3px;
+    color: var(--red);
+    text-shadow: 0 0 30px rgba(229,9,20,0.6);
+    cursor: pointer;
+  }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+ 
+  /* Language Selector */
+  .lang-select {
+    position: relative;
+  }
+  .lang-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+    color: #fff; padding: 8px 14px; border-radius: 4px;
+    cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+  .lang-btn:hover { background: rgba(255,255,255,0.18); }
+  .lang-dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: #1a1a1a; border: 1px solid var(--border);
+    border-radius: 6px; min-width: 160px; overflow: hidden;
+    display: none; z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .lang-dropdown.open { display: block; }
+  .lang-option {
+    padding: 11px 16px; cursor: pointer; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px;
+    transition: background 0.2s;
+  }
+  .lang-option:hover { background: rgba(229,9,20,0.15); }
+  .lang-option.active { color: var(--red); font-weight: 700; }
+  .flag { font-size: 1.1rem; }
+ 
+  .btn-login {
+    background: var(--red); color: #fff; border: none;
+    padding: 9px 22px; border-radius: 4px; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-login:hover { background: #f40612; transform: scale(1.04); }
+ 
+  /* HERO CONTENT */
+  .hero-content {
+    position: relative; z-index: 10;
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; text-align: center;
+    padding: 100px 20px 60px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    letter-spacing: 2px; line-height: 1.05;
+    text-shadow: 2px 2px 20px rgba(0,0,0,0.8);
+    animation: fadeUp 0.8s ease both;
+    max-width: 800px;
+  }
+  .hero-sub {
+    margin-top: 16px; font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--subtext); font-weight: 600;
+    animation: fadeUp 0.8s 0.15s ease both;
+    max-width: 600px;
+  }
+  .hero-note {
+    margin-top: 12px; font-size: 0.95rem; color: #aaa;
+    animation: fadeUp 0.8s 0.25s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+ 
+  .email-form {
+    margin-top: 32px;
+    display: flex; gap: 0;
+    max-width: 560px; width: 100%;
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+  .email-input {
+    flex: 1; padding: 16px 20px;
+    background: rgba(0,0,0,0.7); border: 2px solid var(--border);
+    border-right: none; border-radius: 4px 0 0 4px;
+    color: #fff; font-size: 1rem; font-family: 'Nunito', sans-serif;
+    outline: none; transition: border-color 0.2s;
+  }
+  .email-input:focus { border-color: rgba(255,255,255,0.5); }
+  .email-input::placeholder { color: #888; }
+  .btn-start {
+    background: var(--red); color: #fff; border: none;
+    padding: 16px 28px; border-radius: 0 4px 4px 0;
+    cursor: pointer; font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 1px;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn-start:hover { background: #f40612; }
+ 
+  /* ===== AUTH MODAL ===== */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 500;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #1a1a1a; border-radius: 10px;
+    padding: 44px 40px; width: 100%; max-width: 420px;
+    border: 1px solid var(--border);
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .modal h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+  .modal-tabs {
+    display: flex; gap: 0; margin-bottom: 28px;
+    border-bottom: 2px solid var(--border);
+  }
+  .modal-tab {
+    flex: 1; padding: 10px 0; text-align: center;
+    cursor: pointer; font-weight: 700; color: #888;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .modal-tab.active { color: var(--red); border-color: var(--red); }
+  .modal-field { margin-bottom: 16px; }
+  .modal-field label { display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 6px; }
+  .modal-field input {
+    width: 100%; padding: 13px 16px;
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 6px; color: #fff; font-size: 1rem;
+    font-family: 'Nunito', sans-serif; outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-field input:focus { border-color: var(--red); }
+  .btn-modal {
+    width: 100%; background: var(--red); color: #fff; border: none;
+    padding: 14px; border-radius: 6px; font-size: 1rem;
+    font-weight: 800; font-family: 'Nunito', sans-serif;
+    cursor: pointer; margin-top: 8px; transition: background 0.2s;
+  }
+  .btn-modal:hover { background: #f40612; }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #888;
+    font-size: 1.5rem; cursor: pointer;
+  }
+  .modal-close:hover { color: #fff; }
+ 
+  /* ===== MOVIES PAGE ===== */
+  .movies-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 4%;
+    background: rgba(10,10,10,0.96);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .movies-nav .logo { font-size: 1.8rem; }
+  .search-bar {
+    flex: 1; max-width: 380px; margin: 0 30px;
+    display: flex; align-items: center;
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+    border-radius: 30px; padding: 8px 18px; gap: 10px;
+  }
+  .search-bar input {
+    background: none; border: none; color: #fff;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem;
+    flex: 1; outline: none;
+  }
+  .search-bar input::placeholder { color: #666; }
+  .search-icon { color: #888; font-size: 1rem; }
+ 
+  .movies-content {
+    padding-top: 80px; min-height: 100vh;
+    background: var(--dark);
+  }
+ 
+  /* Hero Banner */
+  .featured-banner {
+    position: relative; height: 70vh; min-height: 400px;
+    overflow: hidden;
+  }
+  .featured-bg {
+    width: 100%; height: 100%; object-fit: cover;
+    background: linear-gradient(135deg, #1a0a0a, #0d0020, #001a0a);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .featured-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, rgba(10,10,10,0.95) 40%, transparent),
+                linear-gradient(to top, rgba(10,10,10,0.8) 0%, transparent 50%);
+  }
+  .featured-info {
+    position: absolute; bottom: 60px; left: 5%;
+    max-width: 500px;
+  }
+  .featured-badge {
+    display: inline-block; background: var(--red);
+    padding: 3px 12px; border-radius: 3px;
+    font-size: 0.75rem; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .featured-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem;
+    line-height: 1; margin-bottom: 14px;
+  }
+  .featured-desc {
+    font-size: 0.95rem; color: #ccc; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .featured-btns { display: flex; gap: 12px; }
+  .btn-play {
+    background: #fff; color: #000;
+    border: none; padding: 12px 28px;
+    border-radius: 4px; font-weight: 800; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-play:hover { background: rgba(255,255,255,0.85); }
+  .btn-more {
+    background: rgba(255,255,255,0.15); color: #fff;
+    border: none; padding: 12px 24px;
+    border-radius: 4px; font-weight: 700; font-size: 1rem;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-more:hover { background: rgba(255,255,255,0.25); }
+ 
+  /* Categories */
+  .section { padding: 36px 4%; }
+  .section-title {
+    font-size: 1.3rem; font-weight: 800;
+    margin-bottom: 18px; color: #fff;
+  }
+  .movies-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  .movie-card {
+    position: relative; border-radius: 6px; overflow: hidden;
+    aspect-ratio: 2/3; cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    background: #1e1e1e;
+  }
+  .movie-card:hover {
+    transform: scale(1.06);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    z-index: 2;
+  }
+  .card-poster {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 30%, transparent);
+    opacity: 0; transition: opacity 0.25s;
+    display: flex; align-items: flex-end;
+    padding: 14px 12px;
+  }
+  .movie-card:hover .card-overlay { opacity: 1; }
+  .card-title { font-size: 0.85rem; font-weight: 700; line-height: 1.2; }
+  .card-year { font-size: 0.75rem; color: #aaa; margin-top: 4px; }
+ 
+  /* Poster placeholder colors */
+  .poster-1 { background: linear-gradient(135deg, #1a0a2e, #6a0dad); }
+  .poster-2 { background: linear-gradient(135deg, #0d1b2a, #1b4f72); }
+  .poster-3 { background: linear-gradient(135deg, #1a0000, #8b0000); }
+  .poster-4 { background: linear-gradient(135deg, #001a00, #1a5c1a); }
+  .poster-5 { background: linear-gradient(135deg, #1a1a00, #6b6b00); }
+  .poster-6 { background: linear-gradient(135deg, #001a1a, #005555); }
+  .poster-1b { background: linear-gradient(135deg, #2d0a0a, #a0522d); }
+  .poster-2b { background: linear-gradient(135deg, #0a0a2d, #483d8b); }
+  .poster-3b { background: linear-gradient(135deg, #0a2d0a, #228b22); }
+  .poster-4b { background: linear-gradient(135deg, #2d2d0a, #d4a017); }
+  .poster-5b { background: linear-gradient(135deg, #0a2d2d, #008b8b); }
+  .poster-6b { background: linear-gradient(135deg, #2d0a2d, #9400d3); }
+ 
+  .card-letter {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem; color: rgba(255,255,255,0.15);
+  }
+ 
+  /* User menu */
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 6px;
+    background: var(--red); display: flex; align-items: center;
+    justify-content: center; font-weight: 800; font-size: 0.9rem;
+    cursor: pointer;
+  }
+ 
+  /* toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: #1a1a1a; border: 1px solid var(--border);
+    padding: 14px 28px; border-radius: 8px; font-size: 0.95rem;
+    z-index: 999; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+ 
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #111; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+ 
+  .divider {
+    border: none; border-top: 1px solid rgba(255,255,255,0.07);
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ===================== LANDING PAGE ===================== -->
+<div id="landing">
+  <!-- Animated Background -->
+  <div class="hero-bg">
+    <div class="bg-grid" id="bgGrid"></div>
+  </div>
+  <div class="bg-overlay"></div>
+ 
+  <!-- Nav -->
+  <nav>
+    <div class="logo">UZFLEX</div>
+    <div class="nav-right">
+      <div class="lang-select">
+        <button class="lang-btn" onclick="toggleLang()" id="langBtn">
+          <span id="langFlag">🌐</span>
+          <span id="langLabel" data-key="uz">O'zbek</span>
+          <span>▾</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown">
+          <div class="lang-option active" onclick="setLang('uz')"><span class="flag">🇺🇿</span> O'zbek</div>
+          <div class="lang-option" onclick="setLang('ru')"><span class="flag">🇷🇺</span> Русский</div>
+          <div class="lang-option" onclick="setLang('en')"><span class="flag">🇬🇧</span> English</div>
+          <div class="lang-option" onclick="setLang('tr')"><span class="flag">🇹🇷</span> Türkçe</div>
+          <div class="lang-option" onclick="setLang('ar')"><span class="flag">🇸🇦</span> العربية</div>
+        </div>
+      </div>
+      <button class="btn-login" onclick="openModal('login')" id="navLoginBtn"></button>
+    </div>
+  </nav>
+ 
+  <!-- Hero Content -->
+  <div class="hero-content">
+    <h1 class="hero-title" id="heroTitle"></h1>
+    <p class="hero-sub" id="heroPriceLine"></p>
+    <p class="hero-note" id="heroNote"></p>
+    <div class="email-form">
+      <input class="email-input" type="email" id="heroEmail" placeholder="email@example.com" />
+      <button class="btn-start" id="heroStartBtn" onclick="handleStart()"></button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ===================== MOVIES PAGE ===================== -->
+<div id="movies-page">
+  <!-- Nav -->
+  <nav class="movies-nav">
+    <div class="logo" onclick="goLanding()">UZFLEX</div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="" />
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="lang-select">
+        <button class="lang-btn" onclick="toggleLang2()" id="langBtn2">
+          <span id="langFlag2">🌐</span>
+          <span id="langLabel2">O'zbek</span>
+          <span>▾</span>
+        </button>
+        <div class="lang-dropdown" id="langDropdown2">
+          <div class="lang-option active" onclick="setLang('uz')"><span class="flag">🇺🇿</span> O'zbek</div>
+          <div class="lang-option" onclick="setLang('ru')"><span class="flag">🇷🇺</span> Русский</div>
+          <div class="lang-option" onclick="setLang('en')"><span class="flag">🇬🇧</span> English</div>
+          <div class="lang-option" onclick="setLang('tr')"><span class="flag">🇹🇷</span> Türkçe</div>
+          <div class="lang-option" onclick="setLang('ar')"><span class="flag">🇸🇦</span> العربية</div>
+        </div>
+      </div>
+      <div class="user-avatar" id="userAvatar">U</div>
+    </div>
+  </nav>
+ 
+  <div class="movies-content">
+    <!-- Featured Banner -->
+    <div class="featured-banner">
+      <div class="featured-bg" style="background: linear-gradient(135deg, #0a0010 0%, #1a0030 40%, #000a20 100%);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:12rem;color:rgba(255,255,255,0.03);letter-spacing:20px;user-select:none;">UZFLEX</div>
+      </div>
+      <div class="featured-overlay"></div>
+      <div class="featured-info">
+        <span class="featured-badge" id="featBadge">Tavsiya etiladi</span>
+        <div class="featured-title">Stranger Things</div>
+        <p class="featured-desc" id="featDesc">Hawkins shaharchasi ostida yashiringan sirli dunyo. Bir guruh bolalar g'ayritabiiy kuchlar bilan to'qnashadi.</p>
+        <div class="featured-btns">
+          <button class="btn-play" id="featPlayBtn">▶ Ko'rish</button>
+          <button class="btn-more" id="featMoreBtn">ℹ Batafsil</button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Sections -->
+    <div class="section">
+      <div class="section-title" id="secTrending"></div>
+      <div class="movies-row" id="row1"></div>
+    </div>
+    <hr class="divider">
+    <div class="section">
+      <div class="section-title" id="secSeries"></div>
+      <div class="movies-row" id="row2"></div>
+    </div>
+    <hr class="divider">
+    <div class="section">
+      <div class="section-title" id="secUzbek"></div>
+      <div class="movies-row" id="row3"></div>
+    </div>
+    <hr class="divider">
+    <div class="section">
+      <div class="section-title" id="secAction"></div>
+      <div class="movies-row" id="row4"></div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ===================== AUTH MODAL ===================== -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-tabs">
+      <div class="modal-tab active" id="tabLogin" onclick="switchTab('login')"></div>
+      <div class="modal-tab" id="tabReg" onclick="switchTab('reg')"></div>
+    </div>
+    <div id="loginForm">
+      <div class="modal-field">
+        <label id="lblEmail"></label>
+        <input type="email" id="loginEmail" />
+      </div>
+      <div class="modal-field">
+        <label id="lblPass"></label>
+        <input type="password" id="loginPass" />
+      </div>
+      <button class="btn-modal" id="btnLoginSubmit" onclick="doLogin()"></button>
+    </div>
+    <div id="regForm" style="display:none;">
+      <div class="modal-field">
+        <label id="lblRegEmail"></label>
+        <input type="email" id="regEmail" />
+      </div>
+      <div class="modal-field">
+        <label id="lblRegPass"></label>
+        <input type="password" id="regPass" />
+      </div>
+      <div class="modal-field">
+        <label id="lblRegPass2"></label>
+        <input type="password" id="regPass2" />
+      </div>
+      <button class="btn-modal" id="btnRegSubmit" onclick="doRegister()"></button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+ 
+<script>
+// ===================== TRANSLATIONS =====================
+const T = {
+  uz: {
+    heroTitle: "Filmlar, seriallar va ko'p narsalar cheksiz",
+    priceLine: "7.99 EUR dan. Istalgan vaqtda bekor qilish mumkin.",
+    note: "Ko'rishga tayyormisiz? Obuna rasmiylashtirish yoki yangilash uchun elektron pochta manzilingizni kiriting.",
+    startBtn: "Ko'rishni boshlash ›",
+    loginBtn: "Kirish",
+    tabLogin: "Kirish",
+    tabReg: "Ro'yxatdan o'tish",
+    lblEmail: "Elektron pochta",
+    lblPass: "Parol",
+    lblRegEmail: "Elektron pochta",
+    lblRegPass: "Parol",
+    lblRegPass2: "Parolni tasdiqlang",
+    btnLogin: "Kirish",
+    btnReg: "Ro'yxatdan o'tish",
+    searchPH: "Kino qidirish...",
+    secTrending: "🔥 Trend filmlar",
+    secSeries: "📺 Mashhur seriallar",
+    secUzbek: "🇺🇿 O'zbek kinolar",
+    secAction: "💥 Jangovar filmlar",
+    featBadge: "Tavsiya etiladi",
+    featDesc: "Hawkins shaharchasi ostida yashiringan sirli dunyo. Bir guruh bolalar g'ayritabiiy kuchlar bilan to'qnashadi.",
+    featPlay: "▶ Ko'rish",
+    featMore: "ℹ Batafsil",
+    langLabel: "O'zbek",
+    langFlag: "🇺🇿",
+    welcome: "Xush kelibsiz!",
+    registered: "Ro'yxatdan o'tildi!",
+  },
+  ru: {
+    heroTitle: "Фильмы, сериалы и многое другое без ограничений",
+    priceLine: "От 7,99 EUR. Отменить подписку можно в любое время.",
+    note: "Готовы смотреть? Введите адрес электронной почты, чтобы оформить или возобновить подписку.",
+    startBtn: "Начать смотреть ›",
+    loginBtn: "Войти",
+    tabLogin: "Войти",
+    tabReg: "Регистрация",
+    lblEmail: "Электронная почта",
+    lblPass: "Пароль",
+    lblRegEmail: "Электронная почта",
+    lblRegPass: "Пароль",
+    lblRegPass2: "Подтвердите пароль",
+    btnLogin: "Войти",
+    btnReg: "Зарегистрироваться",
+    searchPH: "Поиск фильмов...",
+    secTrending: "🔥 В тренде",
+    secSeries: "📺 Популярные сериалы",
+    secUzbek: "🇺🇿 Узбекское кино",
+    secAction: "💥 Боевики",
+    featBadge: "Рекомендуем",
+    featDesc: "Таинственный мир под городком Хокинс. Группа детей сталкивается со сверхъестественными силами.",
+    featPlay: "▶ Смотреть",
+    featMore: "ℹ Подробнее",
+    langLabel: "Русский",
+    langFlag: "🇷🇺",
+    welcome: "Добро пожаловать!",
+    registered: "Регистрация прошла успешно!",
+  },
+  en: {
+    heroTitle: "Movies, series and much more without limits",
+    priceLine: "From 7.99 EUR. Cancel anytime.",
+    note: "Ready to watch? Enter your email to start or renew your subscription.",
+    startBtn: "Get Started ›",
+    loginBtn: "Sign In",
+    tabLogin: "Sign In",
+    tabReg: "Sign Up",
+    lblEmail: "Email address",
+    lblPass: "Password",
+    lblRegEmail: "Email address",
+    lblRegPass: "Password",
+    lblRegPass2: "Confirm password",
+    btnLogin: "Sign In",
+    btnReg: "Create Account",
+    searchPH: "Search movies...",
+    secTrending: "🔥 Trending Now",
+    secSeries: "📺 Popular Series",
+    secUzbek: "🇺🇿 Uzbek Cinema",
+    secAction: "💥 Action Films",
+    featBadge: "Featured",
+    featDesc: "A mysterious world hidden beneath Hawkins. A group of kids encounter supernatural forces.",
+    featPlay: "▶ Play",
+    featMore: "ℹ More Info",
+    langLabel: "English",
+    langFlag: "🇬🇧",
+    welcome: "Welcome!",
+    registered: "Account created!",
+  },
+  tr: {
+    heroTitle: "Filmler, diziler ve çok daha fazlası sınırsız",
+    priceLine: "7,99 EUR'dan itibaren. İstediğiniz zaman iptal edin.",
+    note: "İzlemeye hazır mısınız? Aboneliğinizi başlatmak için e-postanızı girin.",
+    startBtn: "Başla ›",
+    loginBtn: "Giriş Yap",
+    tabLogin: "Giriş Yap",
+    tabReg: "Kayıt Ol",
+    lblEmail: "E-posta adresi",
+    lblPass: "Şifre",
+    lblRegEmail: "E-posta adresi",
+    lblRegPass: "Şifre",
+    lblRegPass2: "Şifreyi onayla",
+    btnLogin: "Giriş Yap",
+    btnReg: "Kayıt Ol",
+    searchPH: "Film ara...",
+    secTrending: "🔥 Trend İçerikler",
+    secSeries: "📺 Popüler Diziler",
+    secUzbek: "🇺🇿 Özbek Sineması",
+    secAction: "💥 Aksiyon Filmleri",
+    featBadge: "Önerilen",
+    featDesc: "Hawkins kasabasının altında gizli gizemli bir dünya. Bir grup çocuk doğaüstü güçlerle karşılaşır.",
+    featPlay: "▶ İzle",
+    featMore: "ℹ Detaylar",
+    langLabel: "Türkçe",
+    langFlag: "🇹🇷",
+    welcome: "Hoş geldiniz!",
+    registered: "Kayıt tamamlandı!",
+  },
+  ar: {
+    heroTitle: "أفلام ومسلسلات وأكثر بلا حدود",
+    priceLine: "من 7.99 EUR. إلغاء الاشتراك في أي وقت.",
+    note: "هل أنت مستعد للمشاهدة؟ أدخل بريدك الإلكتروني للاشتراك.",
+    startBtn: "ابدأ المشاهدة ›",
+    loginBtn: "تسجيل الدخول",
+    tabLogin: "تسجيل الدخول",
+    tabReg: "إنشاء حساب",
+    lblEmail: "البريد الإلكتروني",
+    lblPass: "كلمة المرور",
+    lblRegEmail: "البريد الإلكتروني",
+    lblRegPass: "كلمة المرور",
+    lblRegPass2: "تأكيد كلمة المرور",
+    btnLogin: "دخول",
+    btnReg: "إنشاء حساب",
+    searchPH: "بحث عن فيلم...",
+    secTrending: "🔥 الأكثر رواجاً",
+    secSeries: "📺 مسلسلات شهيرة",
+    secUzbek: "🇺🇿 السينما الأوزبكية",
+    secAction: "💥 أفلام الأكشن",
+    featBadge: "موصى به",
+    featDesc: "عالم غامض مخفي تحت مدينة هوكينز. مجموعة من الأطفال تواجه قوى خارقة.",
+    featPlay: "▶ مشاهدة",
+    featMore: "ℹ معلومات أكثر",
+    langLabel: "العربية",
+    langFlag: "🇸🇦",
+    welcome: "أهلاً وسهلاً!",
+    registered: "تم إنشاء الحساب!",
+  }
+};
+ 
+let currentLang = 'uz';
+let currentUser = null;
+ 
+// BG poster colors
+const bgColors = [
+  '#1a0a2e','#6a0dad','#0d1b2a','#1b4f72','#1a0000','#8b0000',
+  '#001a00','#1a5c1a','#1a1a00','#6b6b00','#001a1a','#005555',
+  '#2d0a0a','#a0522d','#0a0a2d','#483d8b','#0a2d0a','#228b22',
+  '#2d2d0a','#d4a017','#0a2d2d','#008b8b','#2d0a2d','#9400d3',
+];
+const movieLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+ 
+function buildBg() {
+  const grid = document.getElementById('bgGrid');
+  for (let i = 0; i < 21; i++) {
+    const c1 = bgColors[(i * 2) % bgColors.length];
+    const c2 = bgColors[(i * 2 + 1) % bgColors.length];
+    const div = document.createElement('div');
+    div.className = 'bg-poster';
+    div.style.background = `linear-gradient(135deg, ${c1}, ${c2})`;
+    div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center';
+    div.style.fontSize = '3.5rem'; div.style.color = 'rgba(255,255,255,0.12)';
+    div.style.fontFamily = "'Bebas Neue', sans-serif";
+    div.innerHTML = movieLetters[i % movieLetters.length];
+    div.style.animationDelay = (i * 0.2) + 's';
+    grid.appendChild(div);
+  }
+}
+ 
+const movies = {
+  row1: [
+    {t:"Inception",y:"2010",cls:"poster-1"},
+    {t:"The Dark Knight",y:"2008",cls:"poster-2"},
+    {t:"Interstellar",y:"2014",cls:"poster-3"},
+    {t:"Parasite",y:"2019",cls:"poster-4"},
+    {t:"Avatar",y:"2009",cls:"poster-5"},
+    {t:"Dune",y:"2021",cls:"poster-6"},
+    {t:"Oppenheimer",y:"2023",cls:"poster-1b"},
+    {t:"The Matrix",y:"1999",cls:"poster-2b"},
+  ],
+  row2: [
+    {t:"Breaking Bad",y:"2008",cls:"poster-3b"},
+    {t:"Game of Thrones",y:"2011",cls:"poster-4b"},
+    {t:"Stranger Things",y:"2016",cls:"poster-5b"},
+    {t:"The Crown",y:"2016",cls:"poster-6b"},
+    {t:"Squid Game",y:"2021",cls:"poster-1"},
+    {t:"Wednesday",y:"2022",cls:"poster-2"},
+    {t:"Ozark",y:"2017",cls:"poster-3"},
+    {t:"Dark",y:"2017",cls:"poster-4"},
+  ],
+  row3: [
+    {t:"Alpamish",y:"2022",cls:"poster-5"},
+    {t:"O'g'ri",y:"2021",cls:"poster-6"},
+    {t:"Sariq devni minib",y:"2020",cls:"poster-1b"},
+    {t:"Baxt qushi",y:"2019",cls:"poster-2b"},
+    {t:"Ko'z yoshlar",y:"2023",cls:"poster-3b"},
+    {t:"Hayot yo'li",y:"2022",cls:"poster-4b"},
+  ],
+  row4: [
+    {t:"John Wick",y:"2014",cls:"poster-5b"},
+    {t:"Mad Max",y:"2015",cls:"poster-6b"},
+    {t:"Top Gun",y:"2022",cls:"poster-1"},
+    {t:"Mission Impossible",y:"2023",cls:"poster-2"},
+    {t:"Fast & Furious",y:"2023",cls:"poster-3"},
+    {t:"Transformers",y:"2023",cls:"poster-4"},
+    {t:"Avengers",y:"2019",cls:"poster-5"},
+    {t:"Spider-Man",y:"2021",cls:"poster-6"},
+  ]
+};
+ 
+function buildMovieRow(rowId, data) {
+  const container = document.getElementById(rowId);
+  container.innerHTML = '';
+  data.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'movie-card';
+    card.innerHTML = `
+      <div class="card-poster ${m.cls}" style="width:100%;height:100%;">
+        <div class="card-letter">${m.t[0]}</div>
+      </div>
+      <div class="card-overlay">
+        <div>
+          <div class="card-title">${m.t}</div>
+          <div class="card-year">${m.y}</div>
+        </div>
+      </div>`;
+    card.onclick = () => showToast('▶ ' + m.t);
+    container.appendChild(card);
+  });
+}
+ 
+function applyLang() {
+  const t = T[currentLang];
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+ 
+  // Landing
+  document.getElementById('heroTitle').textContent = t.heroTitle;
+  document.getElementById('heroPriceLine').textContent = t.priceLine;
+  document.getElementById('heroNote').textContent = t.note;
+  document.getElementById('heroStartBtn').textContent = t.startBtn;
+  document.getElementById('navLoginBtn').textContent = t.loginBtn;
+  document.getElementById('langLabel').textContent = t.langLabel;
+  document.getElementById('langFlag').textContent = t.langFlag;
+ 
+  // Movies
+  document.getElementById('langLabel2').textContent = t.langLabel;
+  document.getElementById('langFlag2').textContent = t.langFlag;
+  document.getElementById('searchInput').placeholder = t.searchPH;
+  document.getElementById('secTrending').textContent = t.secTrending;
+  document.getElementById('secSeries').textContent = t.secSeries;
+  document.getElementById('secUzbek').textContent = t.secUzbek;
+  document.getElementById('secAction').textContent = t.secAction;
+  document.getElementById('featBadge').textContent = t.featBadge;
+  document.getElementById('featDesc').textContent = t.featDesc;
+  document.getElementById('featPlayBtn').textContent = t.featPlay;
+  document.getElementById('featMoreBtn').textContent = t.featMore;
+ 
+  // Modal
+  document.getElementById('tabLogin').textContent = t.tabLogin;
+  document.getElementById('tabReg').textContent = t.tabReg;
+  document.getElementById('lblEmail').textContent = t.lblEmail;
+  document.getElementById('lblPass').textContent = t.lblPass;
+  document.getElementById('lblRegEmail').textContent = t.lblRegEmail;
+  document.getElementById('lblRegPass').textContent = t.lblRegPass;
+  document.getElementById('lblRegPass2').textContent = t.lblRegPass2;
+  document.getElementById('btnLoginSubmit').textContent = t.btnLogin;
+  document.getElementById('btnRegSubmit').textContent = t.btnReg;
+ 
+  // Dropdown active
+  document.querySelectorAll('.lang-option').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim().includes(t.langLabel));
+  });
+}
+ 
+function setLang(lang) {
+  currentLang = lang;
+  applyLang();
+  document.getElementById('langDropdown').classList.remove('open');
+  document.getElementById('langDropdown2').classList.remove('open');
+}
+ 
+function toggleLang() {
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function toggleLang2() {
+  document.getElementById('langDropdown2').classList.toggle('open');
+}
+ 
+document.addEventListener('click', e => {
+  if (!e.target.closest('.lang-select')) {
+    document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
+  }
+});
+ 
+// Modal
+function openModal(tab) {
+  document.getElementById('authModal').classList.add('open');
+  switchTab(tab || 'login');
+}
+function closeModal() {
+  document.getElementById('authModal').classList.remove('open');
+}
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('regForm').style.display = tab === 'reg' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabReg').classList.toggle('active', tab === 'reg');
+}
+ 
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return;
+  currentUser = email;
+  closeModal();
+  goMovies();
+  showToast(T[currentLang].welcome);
+}
+ 
+function doRegister() {
+  const email = document.getElementById('regEmail').value.trim();
+  const p1 = document.getElementById('regPass').value;
+  const p2 = document.getElementById('regPass2').value;
+  if (!email || !p1) return;
+  if (p1 !== p2) { showToast('❌'); return; }
+  currentUser = email;
+  closeModal();
+  goMovies();
+  showToast(T[currentLang].registered);
+}
+ 
+function handleStart() {
+  const email = document.getElementById('heroEmail').value.trim();
+  if (email) {
+    document.getElementById('loginEmail').value = email;
+    document.getElementById('regEmail').value = email;
+  }
+  openModal('reg');
+}
+ 
+function goMovies() {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('movies-page').style.display = 'block';
+  const initial = currentUser ? currentUser[0].toUpperCase() : 'U';
+  document.getElementById('userAvatar').textContent = initial;
+}
+ 
+function goLanding() {
+  document.getElementById('movies-page').style.display = 'none';
+  document.getElementById('landing').style.display = 'block';
+}
+ 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+ 
+// Init
+buildBg();
+buildMovieRow('row1', movies.row1);
+buildMovieRow('row2', movies.row2);
+buildMovieRow('row3', movies.row3);
+buildMovieRow('row4', movies.row4);
+applyLang();
+</script>
+</body>
